@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+cd "`dirname $0`/.."
+
+PATH=./scripts:./node_modules/.bin:$PATH
+
+TEST=test
+
+watchify -v -d --noparse=node_modules/**/*.js $TEST/test.js -o $TEST/test.bundle.js &
+
+lrhs -b -d $TEST -w "*.html,**/*.js,**/*.css" &
+
+wait

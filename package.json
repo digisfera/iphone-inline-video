@@ -1,0 +1,21 @@
+{
+  "name": "iphone-inline-video",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Manuel Cabral (m.cabral@digisfera.pt)",
+  "license": "ISC",
+  "devDependencies": {
+    "lr-http-server": "^0.1.1",
+    "watchify": "^3.2.3"
+  },
+  "dependencies": {
+    "minimal-event-emitter": "0.0.2"
+  }
+}
