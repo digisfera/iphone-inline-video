@@ -12,7 +12,9 @@
   "author": "Manuel Cabral (m.cabral@digisfera.pt)",
   "license": "ISC",
   "devDependencies": {
+    "browserify": "^10.2.4",
     "lr-http-server": "^0.1.1",
+    "uglify-js": "^2.4.23",
     "watchify": "^3.2.3"
   },
   "dependencies": {

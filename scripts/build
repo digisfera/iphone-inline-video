@@ -1,0 +1,16 @@
+#!/bin/bash
+set -v -e -u
+cd "`dirname $0`/.."
+
+PATH=$PATH:scripts:node_modules/.bin
+
+SRC=src
+DIST=dist
+
+# Create output directory
+mkdir -p $DIST
+
+# Bundle library
+browserify -s IPhoneInlineVideo $SRC/IPhoneInlineVideo.js -o $DIST/IPhoneInlineVideo.js
+
+uglifyjs $DIST/IPhoneInlineVideo.js -o $DIST/IPhoneInlineVideo.min.js -m -c warnings=false

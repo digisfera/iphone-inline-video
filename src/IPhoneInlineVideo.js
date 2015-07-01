@@ -43,7 +43,7 @@ IPhoneInlineVideo.prototype.play = function() {
     var elapsed = (time - lastTime)/1000;
 
     self._videoElement.currentTime = self._videoElement.currentTime + elapsed;
-    this.emit('timeupdate');
+    self.emit('timeupdate');
 
     lastTime = time;
     self._fakePlayAnimationFrameRequest = requestAnimationFrame(fakePlayLoop);
