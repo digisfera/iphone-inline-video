@@ -3,7 +3,8 @@
 var IPhoneInlineVideo = require('../src/IPhoneInlineVideo');
 
 var baseUrl = 'http://www.marzipano.net/demos/common-media/video/';
-var video = new IPhoneInlineVideo(baseUrl + 'mercedes-f1-720x360.mp4', baseUrl + 'mercedes-f1-720x360.mp3');
+var video = new IPhoneInlineVideo();
+video.src = baseUrl + 'mercedes-f1-720x360.mp4';
 
 document.body.appendChild(video.videoElement());
 
