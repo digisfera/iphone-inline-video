@@ -26,9 +26,13 @@ function IPhoneInlineVideo(videoSrcToAudioSrc) {
 
 
   this._audioElement = document.createElement('audio');
+  // Audio must be muted while we wait for the video to load
+  this._audioMutedForVideoLoad = false;
+  this._audioVolume = 1;
 
   this._fakePlayAnimationFrameRequest = null;
   this._fakePlayingEmitted = false;
+
 
   var self = this;
   self.addEventListener('error', function() {
@@ -37,16 +41,21 @@ function IPhoneInlineVideo(videoSrcToAudioSrc) {
   self.addEventListener('playing', function() {
     if(self.onplaying) { self.onplaying(); }
   });
-
-  self._videoElement.addEventListener('loadedmetadata', function() {
-    self.emit('loadedmetadata');
-  });
   self.addEventListener('loadedmetadata', function() {
     if(self.onloadedmetadata) { self.onloadedmetadata(); }
   });
 
+  this._handleVideoLoadedMetadata = function() { self.emit('loadedmetadata'); };
+  self._videoElement.addEventListener('loadedmetadata', this._handleVideoLoadedMetadata);
+
   self.__defineGetter__("currentTime", function() {
     return self._videoElement.currentTime;
+  });
+  self.__defineGetter__("videoWidth", function() {
+    return self._videoElement.videoWidth;
+  });
+  self.__defineGetter__("videoHeight", function() {
+    return self._videoElement.videoHeight;
   });
 
   self.__defineSetter__("currentTime", function(val) {
@@ -67,12 +76,17 @@ function IPhoneInlineVideo(videoSrcToAudioSrc) {
 
 
   self.__defineGetter__("volume", function() {
-    return self._audioElement.volume;
+    return self._audioVolume;
   });
   
   self.__defineSetter__("volume", function(val) {
-    var changed = self._audioElement.volume !== val;
-    self._audioElement.volume = val;
+    var changed = self._audioVolume !== val;
+    self._audioVolume = val;
+
+    if(!this._audioMutedForVideoLoad) {
+      self._audioElement.volume = self._audioVolume;
+    }
+
     if(changed) {
       self.emit('volumechange');
     }
@@ -84,6 +98,19 @@ function IPhoneInlineVideo(videoSrcToAudioSrc) {
 }
 
 eventEmitter(IPhoneInlineVideo);
+
+IPhoneInlineVideo.prototype.destroy = function() {
+  this._videoElement.removeEventListener('loadedmetadata', this._handleVideoLoadedMetadata);
+
+  [ this._videoElement, this._audioElement ].forEach(function(element) {
+    element.pause();
+    element.volume = 0;
+    element.removeAttribute('src');
+  });
+
+  this._videoElement = null;
+  this._audioElement = null;
+};
 
 IPhoneInlineVideo.prototype.videoElement = function() {
   return this._videoElement;
@@ -103,9 +130,16 @@ IPhoneInlineVideo.prototype.audioElement = function() {
 IPhoneInlineVideo.prototype.play = function() {
   var self = this;
 
-  if(self._fakePlayAnimationFrameRequest) { return; } // Already playing
 
-  self._audioElement.currentTime = self._videoElement.currentTime;
+  if(self._fakePlayAnimationFrameRequest) { return; } // Already playing
+ 
+
+  // Audio element play must be in response to user interaction, so we can not
+  // do it inside fakePlayLoop()
+  self._audioMutedForVideoLoad = true;
+  self._audioElement.volume = 0;
+  self._audioElement.play();
+
 
   self._fakePlayingEmitted = false;
 
@@ -118,11 +152,14 @@ IPhoneInlineVideo.prototype.play = function() {
 
     var time = Date.now();
 
-    if(self._videoElement.readyState >= self._videoElement.HAVE_METADATA &&
-       self._audioElement.readyState >= self._audioElement.HAVE_METADATA) {
+    var videoReady = self._videoElement.readyState >= self._videoElement.HAVE_CURRENT_DATA;
+    var audioReady = self._audioElement.readyState >= self._audioElement.HAVE_CURRENT_DATA || self._audioElement.error;
+    if(videoReady && audioReady) {
 
-      if(self._audioElement.paused) {
-        self._audioElement.play();
+      if(self._audioMutedForVideoLoad) {
+        self._audioElement.currentTime = self._videoElement.currentTime;
+        self._audioElement.volume = self._audioVolume;
+        self._audioMutedForVideoLoad = false;
       }
 
       var elapsed = (time - lastTime)/1000;
