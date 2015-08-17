@@ -2,7 +2,7 @@
   "name": "iphone-inline-video",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/IPhoneInlineVideo.js",
   "directories": {
     "test": "test"
   },
