@@ -33,6 +33,8 @@ function IPhoneInlineVideo(videoSrcToAudioSrc) {
   this._fakePlayAnimationFrameRequest = null;
   this._fakePlayingEmitted = false;
 
+  this._seeking = false;
+
 
   var self = this;
   self.addEventListener('error', function() {
@@ -59,8 +61,10 @@ function IPhoneInlineVideo(videoSrcToAudioSrc) {
   });
 
   self.__defineSetter__("currentTime", function(val) {
+    this._seeking = true;
     self._videoElement.currentTime = val;
     self._audioElement.currentTime = val;
+    self.emit('seeking');
   });
 
   self.__defineGetter__("src", function() { return self._videoElement.src; });
@@ -155,6 +159,11 @@ IPhoneInlineVideo.prototype.play = function() {
     var videoReady = self._videoElement.readyState >= self._videoElement.HAVE_CURRENT_DATA;
     var audioReady = self._audioElement.readyState >= self._audioElement.HAVE_CURRENT_DATA || self._audioElement.error;
     if(videoReady && audioReady) {
+
+      if(self._seeking) {
+        self.emit('seeked');
+        self._seeking = false;
+      }
 
       if(self._audioMutedForVideoLoad) {
         self._audioElement.currentTime = self._videoElement.currentTime;
