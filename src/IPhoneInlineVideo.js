@@ -97,6 +97,12 @@ function IPhoneInlineVideo(videoSrcToAudioSrc) {
   });
 
   self.__defineGetter__("duration", function() { return self._videoElement.duration; });
+  self.__defineGetter__("readyState", function() { return self._videoElement.readyState; });
+  self.__defineGetter__("HAVE_NOTHING", function() { return self._videoElement.HAVE_NOTHING; });
+  self.__defineGetter__("HAVE_METADATA", function() { return self._videoElement.HAVE_METADATA; });
+  self.__defineGetter__("HAVE_CURRENT_DATA", function() { return self._videoElement.HAVE_CURRENT_DATA; });
+  self.__defineGetter__("HAVE_FUTURE_DATA", function() { return self._videoElement.HAVE_FUTURE_DATA; });
+  self.__defineGetter__("HAVE_ENOUGH_DATA", function() { return self._videoElement.HAVE_ENOUGH_DATA; });
 
   self.__defineGetter__("paused", function() { return this._fakePlayAnimationFrameRequest === null; });
 }
@@ -112,8 +118,14 @@ IPhoneInlineVideo.prototype.destroy = function() {
     element.removeAttribute('src');
   });
 
+  if(this._fakePlayAnimationFrameRequest) {
+    cancelAnimationFrame(this._fakePlayAnimationFrameRequest);
+    this._fakePlayAnimationFrameRequest = null;
+  }
+
   this._videoElement = null;
   this._audioElement = null;
+
 };
 
 IPhoneInlineVideo.prototype.videoElement = function() {
